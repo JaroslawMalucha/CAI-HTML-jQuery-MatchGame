@@ -5,10 +5,25 @@ var MatchGame = {};
   Renders a 4x4 board of cards.
 */
 $(document).ready(function () {
-  var $game = $('#game');
-  var cardValues = MatchGame.generateCardValues();
-  MatchGame.renderCards(cardValues, $game);
+  MatchGame.RestartGame();
+  $('button.restart-btn').click(function () {
+    MatchGame.RestartGame();
+  })
+  startTime();
 })
+
+MatchGame.RestartGame = function () {
+  var $game = $('#game');
+  $game.data('matchedCount', 0);
+  $('p.score').text('Your score is: ' + 0);
+  var cardValues = MatchGame.generateCardValues();
+  $game.data('timeStarted', new Date());
+  $game.data('stopElapsed', false);
+  elapsedTime($game);
+  MatchGame.renderCards(cardValues, $game);
+
+}
+
 
 /*
   Generates and returns an array of matching card values.
@@ -67,7 +82,9 @@ MatchGame.renderCards = function (cardValues, $game) {
   $game.empty();
   $game.data('flippedCards', []);
   $game.data('canFlip', true);
+  $game.data('allCards', []);
 
+  var allCards = [];
   for (var valueIndex = 0; valueIndex < cardValues.length; valueIndex++) {
     var value = cardValues[valueIndex];
     var color = colors[value - 1];
@@ -78,9 +95,11 @@ MatchGame.renderCards = function (cardValues, $game) {
     };
     var $newCard = $('<div class="col-xs-3 card"></div>');
     $newCard.data(data);
-
+    allCards.push($newCard);
     $game.append($newCard);
   };
+
+  $game.data('allCards', allCards);
 
   $('.card').click(function () {
     MatchGame.flipCard($(this), $('#game'));
@@ -97,15 +116,15 @@ MatchGame.flipCard = function ($card, $game) {
   if ($card.data('isFlipped')) {
     return;
   }
-  
-  if (!$game.data('canFlip')){
+
+  if (!$game.data('canFlip')) {
     return;
   }
-  
+
   $card.css('background-color', $card.data('color'));
   $card.text($card.data('value'));
   $card.data('isFlipped', true);
-  
+
   var flippedCards = $game.data('flippedCards');
   flippedCards.push($card);
 
@@ -117,6 +136,10 @@ MatchGame.flipCard = function ($card, $game) {
       };
       flippedCards[0].css(matchCss);
       flippedCards[1].css(matchCss);
+      var matchedCount = $game.data('matchedCount');
+      matchedCount++;
+      $game.data('matchedCount', matchedCount);
+      $('p.score').text('Your score is: ' + matchedCount);
     } else {
       var noMatchCss = {
         backgroundColor: 'rgb(32, 64, 86)'
@@ -134,4 +157,56 @@ MatchGame.flipCard = function ($card, $game) {
     }
     $game.data('flippedCards', []);
   }
+
+  MatchGame.AllMatched($game);
 };
+
+MatchGame.AllMatched = function ($game) {
+  var allCards = $game.data('allCards');
+  var AllMatched = false;
+  var allCount = allCards.length;
+  var flippedCount = 0;
+  allCards.forEach(element => {
+    if (element.data('isFlipped')) {
+      flippedCount++;
+    }
+  });
+  if (flippedCount === allCount) {
+    $game.data('stopElapsed', true);
+    alert("You won");
+  }
+  //alert("flippedCount: " + flippedCount);
+}
+
+function checkTime(i) {
+  if (i < 10) {
+    i = "0" + i;
+  }
+  return i;
+}
+
+function startTime() {
+  var today = new Date();
+  var h = today.getHours();
+  var m = today.getMinutes();
+  var s = today.getSeconds();
+  // add a zero in front of numbers<10
+  m = checkTime(m);
+  s = checkTime(s);
+  document.getElementById('time').innerHTML = "Time: " + h + ":" + m + ":" + s;
+  t = setTimeout(function () {
+    startTime();
+  }, 500);
+}
+
+function elapsedTime($game) {
+  if ($game.data('stopElapsed')) {
+    return;
+  }
+  var timeStarted = $game.data('timeStarted');
+  var timeElapsed = new Date() - timeStarted;
+  document.getElementById('timeElapsed').innerHTML = Math.floor(timeElapsed / 1000) + "s";
+  t = setTimeout(function () {
+    elapsedTime($game);
+  }, 500);
+}
