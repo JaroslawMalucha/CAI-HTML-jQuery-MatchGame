@@ -66,6 +66,7 @@ MatchGame.renderCards = function (cardValues, $game) {
 
   $game.empty();
   $game.data('flippedCards', []);
+  $game.data('canFlip', true);
 
   for (var valueIndex = 0; valueIndex < cardValues.length; valueIndex++) {
     var value = cardValues[valueIndex];
@@ -96,11 +97,15 @@ MatchGame.flipCard = function ($card, $game) {
   if ($card.data('isFlipped')) {
     return;
   }
-
+  
+  if (!$game.data('canFlip')){
+    return;
+  }
+  
   $card.css('background-color', $card.data('color'));
   $card.text($card.data('value'));
   $card.data('isFlipped', true);
-
+  
   var flippedCards = $game.data('flippedCards');
   flippedCards.push($card);
 
@@ -116,6 +121,7 @@ MatchGame.flipCard = function ($card, $game) {
       var noMatchCss = {
         backgroundColor: 'rgb(32, 64, 86)'
       };
+      $game.data('canFlip', false);
       window.setTimeout(function () {
         flippedCards[0].css(noMatchCss);
         flippedCards[1].css(noMatchCss);
@@ -123,6 +129,7 @@ MatchGame.flipCard = function ($card, $game) {
         flippedCards[0].data('isFlipped', false);
         flippedCards[1].text('');
         flippedCards[1].data('isFlipped', false);
+        $game.data('canFlip', true);
       }, 350)
     }
     $game.data('flippedCards', []);
