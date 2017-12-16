@@ -1,5 +1,15 @@
 var MatchGame = {};
 
+
+// COULD ADD:
+// - Allow user to select from multiple board sizes
+// - Add sound effects
+// - Add flipping animations
+// - Change card values to non-number values
+
+
+
+
 /*
   Sets up a new game after HTML document has loaded.
   Renders a 4x4 board of cards.
